@@ -39,7 +39,8 @@ export default class extends Base {
       posts: data,
       pagination,
       tag: this.get('tag'),
-      cate: this.get('cate')
+      cate: this.get('cate'),
+      source: this.get('source')
     });
     return this.displayView('index');
   }
@@ -51,7 +52,7 @@ export default class extends Base {
     this.http.url = decodeURIComponent(this.http.url);
     let pathname = this.get('pathname');
     if( pathname === 'list' ) { return this.listAction(); }
-    
+
     let detail = await this.model('post').getPostDetail(pathname);
     if(think.isEmpty(detail)){
       return this.redirect('/');
@@ -73,7 +74,7 @@ export default class extends Base {
     detail.pathname = encodeURIComponent(detail.pathname);
     this.assign('page', detail);
     this.assign('pathname', pathname);
-    
+
     let template = 'page';
     if( detail.options ) {
       try {

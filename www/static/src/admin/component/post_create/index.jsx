@@ -4,10 +4,10 @@ import moment from 'moment';
 import ReactDom from 'react-dom';
 import {Link} from 'react-router';
 import {
-  Form, 
-  Radio, 
+  Form,
+  Radio,
   RadioGroup,
-  ValidatedInput 
+  ValidatedInput
 } from 'react-bootstrap-validation';
 import classnames from 'classnames';
 import Datetime from 'react-datetime';
@@ -82,7 +82,7 @@ module.exports = class extends Base {
     OptionsAction.defaultCategory();
     if(this.id){ PostAction.select(this.id); }
   }
-  
+
   componentWillReceiveProps(nextProps) {
     this.id = nextProps.params.id | 0;
     if(this.id) {
@@ -414,7 +414,7 @@ module.exports = class extends Base {
               style={{width: '100%'}}
               maxTagTextLength={5}
               value={postInfo.tag}
-              onChange={val => { 
+              onChange={val => {
                 postInfo.tag = val;
                 this.setState({postInfo});
               }}
@@ -477,7 +477,7 @@ module.exports = class extends Base {
     let template = postInfo.options.template || '';
     let templateList = this.state.templateList.map(t => ({id: t, name: t}));
     templateList = [{id: '', name: '不选择'}].concat(templateList);
-    
+
     return (
       <div style={{marginBottom: 15}}>
         <label>自定义模板</label>
@@ -487,12 +487,12 @@ module.exports = class extends Base {
               showSearch={false}
               style={{width: '100%'}}
               value={template}
-              onChange={val => { 
+              onChange={val => {
                 postInfo.options.template = val;
                 this.setState({postInfo});
               }}
           >
-            
+
             {templateList.map(({id, name}) =>
               <Option key={name} value={id} label={name}>{name}</Option>
             )}
@@ -525,7 +525,29 @@ module.exports = class extends Base {
     );
   }
 
-  /** 
+  /**
+   * 渲染作者
+   */
+  renderAuthor(postInfo = this.state.postInfo) {
+    const props = {
+      value: postInfo.author,
+      placeholder: '发帖人不是作者时填写',
+      onChange:(e)=>{
+        postInfo.author = e.target.value;
+        this.setState({postInfo});
+      }
+    };
+    return (
+      <div style={{marginBottom: 15}}>
+        <label>作者</label>
+        <div>
+          <ValidatedInput name="author" type="text" {...props} />
+        </div>
+      </div>
+    );
+  }
+
+  /**
    * 文章发布按钮，包括保存草稿和发布文章
    */
   renderPostButton(props = {}) {
@@ -596,6 +618,7 @@ module.exports = class extends Base {
               </div>
               <div className={classnames('col-xs-3')}>
                 {this.renderPostButton(props)}
+                {this.renderAuthor()}
                 {this.renderDatetime()}
                 {this.renderPageTemplateSelect()}
                 {this.renderCategory()}

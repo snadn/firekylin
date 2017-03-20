@@ -55,7 +55,7 @@ export default class extends think.model.relation {
   async getPostList(page, options = {}){
     page = page | 0 || 1;
 
-    let field = options.field || 'id,title,pathname,create_time,summary,comment_num';
+    let field = options.field || 'id,title,pathname,create_time,summary,comment_num,author';
     if( (await this.model('user').count()) > 1 ) { field += ',user_id'; }
 
     if(options.tag || options.cate){

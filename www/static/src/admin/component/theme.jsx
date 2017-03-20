@@ -1,20 +1,20 @@
 import Base from 'base';
 import React from 'react';
-import AceEditor from 'react-ace';
 import BreadCrumb from './breadcrumb';
+import CodeMirror from 'react-codemirror';
 import TipAction from 'common/action/tip';
 import ThemeStore from 'admin/store/theme';
 import { SketchPicker } from 'react-color';
 import ThemeAction from 'admin/action/theme';
 import {Form, ValidatedInput} from 'react-bootstrap-validation';
 
-import 'brace/mode/javascript';
-import 'brace/mode/html';
-import 'brace/mode/css';
-import 'brace/theme/monokai';
-import 'brace/ext/language_tools';
+import 'codemirror/lib/codemirror.css';
+import 'codemirror/theme/monokai.css';
+import 'codemirror/mode/css/css';
+import 'codemirror/mode/javascript/javascript';
+import 'codemirror/mode/htmlmixed/htmlmixed';
 
-export default class extends Base {
+module.exports = class extends Base {
   state = this.initialState();
   initialState() {
     return {
@@ -59,6 +59,10 @@ export default class extends Base {
   }
 
   renderConfigElement(element, i) {
+    if( element.type === 'html' ) {
+      element.type = 'htmlmixed';
+    }
+
     switch(element.type) {
       case 'url':
       case 'text':
@@ -164,25 +168,25 @@ export default class extends Base {
         break;
 
       case 'css':
-      case 'html':
+      case 'htmlmixed':
       case 'javascript':
         return (
           <div className="form-group" key={i}>
             <label>{element.label}</label>
             <div>
-              <AceEditor
-                  mode={element.type}
-                  theme="monokai"
-                  width="600px"
-                  height="300px"
-                  fontSize={14}
-                  name={`ace-editor-${element.name}-${element.type}`}
+              <CodeMirror
+                  options={{
+                    theme: 'monokai',
+                    lineNumbers: true,
+                    mode: element.type
+                  }}
                   value={this.state.themeConfig[element.name]}
                   onChange={val => {
                     this.state.themeConfig[element.name] = val;
                     this.forceUpdate();
                   }}
               />
+              
               <div className="help-block">{element.help ? element.help : ''}</div>
             </div>
           </div>

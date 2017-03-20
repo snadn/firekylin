@@ -16,7 +16,7 @@ import TipAction from 'common/action/tip';
 
 import ModalAction from '../../common/action/modal';
 
-export default class extends Base {
+module.exports = class extends Base {
   constructor(props){
     super(props);
     this.state = {
@@ -70,10 +70,10 @@ export default class extends Base {
 
   getUserList(){
     if(this.state.loading){
-      return (<tr><td colSpan="8" className="center">加载中……</td></tr>);
+      return (<tr><td colSpan="10" className="center">加载中……</td></tr>);
     }
     if(!this.state.userList.length){
-      return (<tr><td colSpan="8" className="center">无相关用户</td></tr>);
+      return (<tr><td colSpan="10" className="center">无相关用户</td></tr>);
     }
     return this.state.userList.map(item => {
       return (
@@ -83,6 +83,8 @@ export default class extends Base {
           <td>{item.email}</td>
           <td>{this.getUserType(item)}</td>
           <td>{item.status == 1 ? <span className="label label-success">有效</span> : <span className="label label-warning">禁用</span>}</td>
+          <td>{item.post_num}</td>
+          <td>{item.comment_num}</td>
           <td>{item.create_time}</td>
           <td>{item.last_login_time}</td>
           <td>
@@ -127,6 +129,8 @@ export default class extends Base {
                 <th>邮箱</th>
                 <th>用户组</th>
                 <th>有效</th>
+                <th>文章数</th>
+                <th>评论数</th>
                 <th>注册时间</th>
                 <th>最后登录时间</th>
                 <th>操作</th>

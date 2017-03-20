@@ -10,7 +10,7 @@ import TagAction from 'admin/action/tag';
 import TagStore from 'admin/store/tag';
 import TipAction from 'common/action/tip';
 
-export default class extends Base {
+module.exports = class extends Base {
   initialState() {
     return Object.assign({
       submitting: false,
@@ -49,7 +49,6 @@ export default class extends Base {
   handleTrigger(data, type){
     switch(type){
       case 'saveTagFail':
-        TipAction.fail(data.message);
         this.setState({submitting: false});
         break;
       case 'saveTagSuccess':
@@ -82,12 +81,6 @@ export default class extends Base {
     let props = {}
     if(this.state.submitting){
       props.disabled = true;
-    }
-
-    //如果是在编辑状态下在没有拿到数据之前不做渲染
-    //针对 react-bootstrap-validation 插件在 render 之后不更新 defaultValue 做的处理
-    if( this.id && !this.state.tagInfo.pathname ) {
-      return null;
     }
 
     return (

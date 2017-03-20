@@ -56,7 +56,7 @@ export default class extends Post {
     }
     
     post.user_id = this.poster.id;
-    post = this.getContentAndSummary(post);
+    post = await this.getContentAndSummary(post);
     post = this.getPostTime(post);
     post.tag = await this.getTagIds(post.tag);
 

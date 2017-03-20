@@ -33,7 +33,7 @@ import 'react-datetime/css/react-datetime.css';
 import 'rc-select/assets/index.css';
 import './style.css';
 
-export default class extends Base {
+module.exports = class extends Base {
   initialState() {
     return JSON.parse(JSON.stringify({
       postSubmitting: false,
@@ -48,13 +48,15 @@ export default class extends Base {
         create_time: '',
         allow_comment: true,
         options: {
+          template: '',
           push_sites: []
         }
       },
       status: 3,
       cateList: [],
       tagList: [],
-      push_sites: []
+      push_sites: [],
+      templateList: []
     }));
   }
 
@@ -88,6 +90,27 @@ export default class extends Base {
     }
     let {postInfo} = this.initialState();
     this.setState({postInfo});
+  }
+
+  /**
+   * 判断是否是文章管理
+   */
+  isPost() {
+    return !this.type;
+  }
+
+  /**
+   * 判断是否是页面管理
+   */
+  isPage() {
+    return this.type;
+  }
+
+  /**
+   * 获取页面自定义模板列表
+   */
+  getThemeTemplateList(templateList) {
+    this.setState({templateList});
   }
 
   /**
@@ -196,12 +219,31 @@ export default class extends Base {
   }
 
   /**
+   * https://github.com/lepture/editor/blob/master/src/intro.js#L327-L341
+   * The right word count in respect for CJK.
+   */
+  wordCount(data) {
+    var pattern = /[a-zA-Z0-9_\u0392-\u03c9]+|[\u4E00-\u9FFF\u3400-\u4dbf\uf900-\ufaff\u3040-\u309f\uac00-\ud7af]+/g;
+    var m = data.match(pattern);
+    var count = 0;
+    if( m === null ) return count;
+    for (var i = 0; i < m.length; i++) {
+      if (m[i].charCodeAt(0) >= 0x4E00) {
+        count += m[i].length;
+      } else {
+        count += 1;
+      }
+    }
+    return count;
+  }
+
+  /**
    * 渲染标题输入控件
    */
   renderTitle(postInfo = this.state.postInfo) {
     let props = {
       value: postInfo.title,
-      label: `${this.id ? '编辑' : '撰写'}${this.type ? '页面' : '文章'}`,
+      label: `${this.id ? '编辑' : '撰写'}${this.isPage() ? '页面' : '文章'}`,
       onChange:(e)=>{
         postInfo.title = e.target.value;
         this.setState({postInfo});
@@ -258,7 +300,17 @@ export default class extends Base {
           onFullScreen={isFullScreen => this.setState({isFullScreen})}
           info = {{id: this.id,type: this.type}}
         />
-        <p style={{lineHeight: '30px'}}>文章使用 markdown 格式，格式说明请见<a href="https://guides.github.com/features/mastering-markdown/" target="_blank">这里</a></p>
+        <p style={{lineHeight: '30px'}}>
+          <span className="pull-left">
+            文章使用 markdown 格式，格式说明请见
+            <a href="https://guides.github.com/features/mastering-markdown/" target="_blank">
+              这里
+            </a>
+          </span>
+          <span className="pull-right">
+            字数：{this.wordCount(this.state.postInfo.markdown_content)}
+          </span>
+        </p>
       </div>
     );
   }
@@ -351,7 +403,7 @@ export default class extends Base {
    * 渲染标签选择，编辑页面的时候无标签
    */
   renderTag(postInfo = this.state.postInfo) {
-    if( this.type ) { return null; }
+    if( this.isPage() ) { return null; }
 
     return (
       <div className="form-group">
@@ -381,7 +433,7 @@ export default class extends Base {
    * 嵌套分类树最大支持两层
    */
   renderCategory(postInfo = this.state.postInfo) {
-    if( this.type ) { return null; }
+    if( this.isPage() ) { return null; }
 
     let cateInitial = [];
     if( Array.isArray(this.state.postInfo.cate) ) {
@@ -414,6 +466,40 @@ export default class extends Base {
         </ul>
       </div>
     );
+  }
+
+  /**
+   * 渲染页面模板选择控件，仅对页面编辑有效
+   */
+  renderPageTemplateSelect(postInfo = this.state.postInfo) {
+    if( this.isPost() ) { return null; }
+
+    let template = postInfo.options.template || '';
+    let templateList = this.state.templateList.map(t => ({id: t, name: t}));
+    templateList = [{id: '', name: '不选择'}].concat(templateList);
+    
+    return (
+      <div style={{marginBottom: 15}}>
+        <label>自定义模板</label>
+        <div>
+          <Select
+              optionLabelProp="label"
+              showSearch={false}
+              style={{width: '100%'}}
+              value={template}
+              onChange={val => { 
+                postInfo.options.template = val;
+                this.setState({postInfo});
+              }}
+          >
+            
+            {templateList.map(({id, name}) =>
+              <Option key={name} value={id} label={name}>{name}</Option>
+            )}
+          </Select>
+        </div>
+      </div>
+    )
   }
 
   /**
@@ -467,7 +553,7 @@ export default class extends Base {
             {...props}
             className="btn btn-primary"
             onClick={publishOnClick}
-        >{this.state.postSubmitting ? '发布中...' : `发布${this.type ? '页面' : '文章'}`}</button>
+        >{this.state.postSubmitting ? '发布中...' : `发布${this.isPage() ? '页面' : '文章'}`}</button>
       </div>
     );
   }
@@ -511,6 +597,7 @@ export default class extends Base {
               <div className={classnames('col-xs-3')}>
                 {this.renderPostButton(props)}
                 {this.renderDatetime()}
+                {this.renderPageTemplateSelect()}
                 {this.renderCategory()}
                 {this.renderTag()}
                 {this.renderPublicRadio()}

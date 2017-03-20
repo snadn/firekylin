@@ -51,9 +51,10 @@ output/
 output.theme/
 .version
 .installed
-
-build/firekylin
+build
 
 75team.sh
 stc/
 jsconfig.json
+.vscode
+www/theme/firekylin_new

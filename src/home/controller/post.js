@@ -2,6 +2,9 @@
 
 import Base from './base.js';
 import fs from 'fs';
+import path from 'path';
+
+const stats = think.promisify(fs.stat);
 
 
 export default class extends Base {
@@ -47,6 +50,8 @@ export default class extends Base {
   async detailAction(){
     this.http.url = decodeURIComponent(this.http.url);
     let pathname = this.get('pathname');
+    if( pathname === 'list' ) { return this.listAction(); }
+    
     let detail = await this.model('post').getPostDetail(pathname);
     if(think.isEmpty(detail)){
       return this.redirect('/');
@@ -68,8 +73,21 @@ export default class extends Base {
     detail.pathname = encodeURIComponent(detail.pathname);
     this.assign('page', detail);
     this.assign('pathname', pathname);
+    
+    let template = 'page';
+    if( detail.options ) {
+      try {
+        detail.options = JSON.parse(detail.options);
+        if( detail.options.template ) {
+          let stat = await stats( path.join(this.THEME_VIEW_PATH, 'template', detail.options.template) );
+          template = `template${think.sep}`+detail.options.template.slice(0, -5);
+        }
+      } catch(e) {
+        console.log(e);
+      }
+    }
 
-    return this.displayView('page');
+    return this.displayView(template);
   }
   /**
    * post archive

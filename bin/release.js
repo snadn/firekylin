@@ -127,13 +127,13 @@ Promise.resolve().then(function () {
 	} else {
 		fs.symlinkSync(basePath + 'node_modules', outputPath + 'node_modules', 'dir');
 	}
-})/*.then(function () {
+}).then(function () {
 	console.log('begin run webpack release');
 	// 清理编译目录
 	fs.removeSync(basePath + 'www/static/js/');
 	// 使用系统调用，防止io延迟
 	return exec('npm run webpack.build.production');
-})*/.then(function () {
+}).then(function () {
 
 	/*调用fis进行编译*/
 	console.log('begin run fis3 release');

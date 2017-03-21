@@ -19,23 +19,23 @@ export default class extends think.controller.base {
       this.http.error = null;
     }
 
-    let errorConfig = this.config('error');
-    let message = this.http.error && this.http.error.message || '';
-    if(this.isJsonp()){
-      return this.jsonp({
-        [errorConfig.key]: status,
-        [errorConfig.msg]: message
-      })
-    }else if(this.isAjax()){
-      return this.fail(status, message);
-    }
+      let errorConfig = this.config('error');
+      let message = this.http.error && this.http.error.message || '';
+      if (this.isJsonp()) {
+        return this.jsonp({
+          [errorConfig.key]: status,
+          [errorConfig.msg]: message
+        })
+      } else if (this.isAjax() || /[\w-]+\/json(?=[^\w-]|$)/.test(this.http.headers.accept)) {
+        return this.fail(status, message);
+      }
 
     let module = 'common';
     if(think.mode !== think.mode_module){
       module = this.config('default_module');
     }
     let file = `${module}/error/${status}.html`;
-    
+
     let {theme} = await this.model('options').getOptions();
     let themeErrorFilePath = path.join(think.RESOURCE_PATH, 'theme', theme, 'error', `${status}.html`);
     try {
@@ -44,7 +44,7 @@ export default class extends think.controller.base {
     } catch(e) {
       console.log(e);
     }
-    
+
     let options = this.config('tpl');
     options = think.extend({}, options, {type: 'base', file_depr: '_'});
     this.fetch(file, {}, options).then(content => {
@@ -54,21 +54,21 @@ export default class extends think.controller.base {
     });
   }
   /**
-   * Bad Request 
+   * Bad Request
    * @return {Promise} []
    */
   async _400Action(){
     return await this.displayError(400);
   }
   /**
-   * Forbidden 
+   * Forbidden
    * @return {Promise} []
    */
   async _403Action(){
     return await this.displayError(403);
   }
   /**
-   * Not Found 
+   * Not Found
    * @return {Promise}      []
    */
   async _404Action(){

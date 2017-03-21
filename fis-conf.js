@@ -10,6 +10,7 @@ fis.set('project.files', [
 	'/view/**',
 	'/www/*.js',
 	'/www/static/js/**', // chunk 为 webpack 生成，fis 依赖无法处理，整体拷贝
+	'/www/static/img/**', // 图片是在js中用的
 	'/www/theme/**',
 	'/map.json',
 	'/pm2.json'
@@ -60,10 +61,12 @@ fis.match('/{src,view}/**', {
 }).match('/www/(static/**)', {
 	url: '/$1',
 	useHash: true
-}).match('/www/(theme/**)', {
-	url: '/$1'
 }).match('/www/static/js/chunk.*', {
 	useHash: false
+}).match('/www/static/img/**', {
+	useHash: false
+}).match('/www/(theme/**)', {
+	url: '/$1'
 });
 
 fis.match('::package', {

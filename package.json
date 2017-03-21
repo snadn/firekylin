@@ -49,6 +49,7 @@
     "babel-preset-stage-1": "^6.5.0",
     "classnames": "^2.2.3",
     "codemirror": "^5.24.2",
+    "colors": "^1.1.2",
     "css-loader": "^0.23.1",
     "fis-parser-babelcore": "^2.1.1",
     "fis3": "^3.4.32",

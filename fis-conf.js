@@ -12,14 +12,13 @@ fis.set('project.files', [
 	'/www/static/js/**', // chunk 为 webpack 生成，fis 依赖无法处理，整体拷贝
 	'/www/theme/**',
 	'/map.json',
-	'/pm2.json',
-	'/.installed'
+	'/pm2.json'
 ]);
 fis.set('project.ignore', ignore);
 
 fis.media('update').set('project.ignore', upignore);
 
-fis.match('{*, .installed}', {
+fis.match('*', {
 	deploy: [
 		fis.plugin('local-deliver', {
 			to: 'output'

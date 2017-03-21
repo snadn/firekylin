@@ -1,6 +1,6 @@
 {
   "apps": [{
-    "name": "firekylin",
+    "name": "blog",
     "script": "www/production.js",
     "cwd": "./",
     "exec_mode": "cluster",
@@ -10,7 +10,7 @@
     "node_args": [],
     "args": [],
     "env": {
-      
+
     }
   }]
 }

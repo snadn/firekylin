@@ -10,7 +10,8 @@
     "copy-package": "node bin/copy_package.js",
     "webpack": "webpack --watch",
     "webpack.build": "webpack",
-    "webpack.build.production": "webpack --config=webpack.production.config.babel.js"
+    "webpack.build.production": "webpack --config=webpack.production.config.babel.js",
+    "release": "node bin/release.js"
   },
   "dependencies": {
     "babel-runtime": "6.x.x",
@@ -49,6 +50,10 @@
     "classnames": "^2.2.3",
     "codemirror": "^5.24.2",
     "css-loader": "^0.23.1",
+    "fis-parser-babelcore": "^2.1.1",
+    "fis3": "^3.4.32",
+    "fis3-postpackager-loader": "^2.1.4",
+    "fs-promise": "^2.0.0",
     "history": "^1.17.0",
     "md5": "^2.0.0",
     "qrcode-react": "^0.1.10",
@@ -74,6 +79,7 @@
     "stc-uglify": "^1.0.1",
     "style-loader": "^0.13.0",
     "superagent": "^1.7.2",
+    "tar-pack": "^3.4.0",
     "webpack": "^2.2.0"
   },
   "repository": "https://github.com/75team/firekylin",

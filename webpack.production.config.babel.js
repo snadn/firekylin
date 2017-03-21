@@ -1,6 +1,8 @@
 import webpack from 'webpack';
 import config from './webpack.config.babel.js';
 
+config.output.chunkFilename = 'chunk.[id].[name]_[chunkhash:7].js';
+
 config.plugins.push(
   new webpack.optimize.UglifyJsPlugin({
     compress: {

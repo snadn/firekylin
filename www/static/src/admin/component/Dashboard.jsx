@@ -97,7 +97,7 @@ module.exports = class extends Base {
                       </div>
                       <span className="loading">{step[1]}</span>
                       <span className="ok">{step[2].replace('%d', this.state.downCount)}</span>
-                    </li>  
+                    </li>
                   )}
                 </ul>
               </div>
@@ -123,7 +123,7 @@ module.exports = class extends Base {
         <div className="manage-container">
           {this.state.needUpdate ?
             <p className="bg-info update-message">
-              Firekylin <a href={`https://github.com/75team/firekylin/blob/master/CHANGELOG.md#${this.state.needUpdate.replace(/\./g, '')}`}>{this.state.needUpdate}</a> 已经发布，请立即 <a href="http://firekylin.org/release/latest.tar.gz">下载更新</a> 或者使用 <a href="javascript:void(0)" onClick={this.renderUpdateConfirm.bind(this)}>在线更新</a>！
+              Firekylin <a href={`https://github.com/75team/firekylin/blob/master/CHANGELOG.md#${this.state.needUpdate.replace(/\./g, '')}`}>{this.state.needUpdate}</a> 已经发布，请合并最新代码到 custom 分支，通过 jenkins 重新构建，进行更新！
             </p>
           : null}
           <h3 style={{marginBottom: '30px'}}>网站概要</h3>

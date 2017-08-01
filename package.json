@@ -99,7 +99,6 @@
   "repository": "https://github.com/firekylin/firekylin",
   "license": "MIT",
   "pre-commit": [
-    "check-extraneous-pkgs",
     "lint-break-on-errors"
   ]
 }

@@ -1,8 +1,8 @@
-const path = require('path');
-const webpack = require('webpack');
+import path from 'path';
+import webpack from 'webpack';
 
 var base = path.join(__dirname, 'www/static');
-module.exports = {
+export default {
   devtool: 'source-map',
   entry: {
     admin: `${base}/src/admin/app.jsx`,

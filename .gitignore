@@ -60,4 +60,6 @@ jsconfig.json
 www/theme/firekylin_new
 db/
 
+/pkg
+
 .eslintcache

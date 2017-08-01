@@ -1,10 +1,10 @@
 {
-  "name": "Firekylin",
+  "name": "blog",
   "description": "A Simple & Fast Node Bloging Platform Base On ThinkJS 2.0 & ReactJS & ES2015+",
   "version": "0.15.12",
   "scripts": {
     "start": "node www/development.js",
-    "compile": "babel --presets es2015,stage-1 --plugins transform-runtime src/ --out-dir app/",
+    "compile": "babel src/ --out-dir app/ --source-maps",
     "watch-compile": "node -e \"console.log('<npm run watch-compile> no longer need, use <npm start> command directly.');console.log();\"",
     "watch": "npm run watch-compile",
     "copy-package": "node bin/copy_package.js",
@@ -14,7 +14,8 @@
     "lint": "eslint ./src ./*.js ./www/*.js ./www/static/src ./www/theme/firekylin --ignore-path .gitignore --cache -f table --ext .js,.jsx || true",
     "lint-fix": "eslint ./src ./*.js ./www/*.js ./www/static/src ./www/theme/firekylin --ignore-path .gitignore -f table --ext .js,.jsx --fix || true",
     "lint-break-on-errors": "echo '\n[INFO] Running ESLint...\n[INFO] (Autofix with `npm run lint-fix`)' && eslint ./src ./*.js ./www/*.js ./www/static/src ./www/theme/firekylin --ignore-path .gitignore -f table --ext .js,.jsx",
-    "check-extraneous-pkgs": "npm list --depth=0 && echo '[SUCCESS] No extraneous packages.' || (echo '[INFO] Pruning extraneous packages...\n' && npm prune)"
+    "check-extraneous-pkgs": "npm list --depth=0 && echo '[SUCCESS] No extraneous packages.' || (echo '[INFO] Pruning extraneous packages...\n' && npm prune)",
+	"release": "node bin/release.js"
   },
   "dependencies": {
     "babel-runtime": "6.x.x",
@@ -56,7 +57,12 @@
     "babel-preset-stage-1": "^6.5.0",
     "classnames": "^2.2.3",
     "codemirror": "^5.26.0",
+    "colors": "^1.1.2",
     "css-loader": "^0.23.1",
+    "fis-parser-babelcore": "^2.1.1",
+	"fis3": "^3.4.32",
+    "fis3-postpackager-loader": "^2.1.4",
+    "fs-promise": "^1.0.0",
     "eslint": "^3.19.0",
     "eslint-import-resolver-webpack": "^0.8.1",
     "eslint-plugin-import": "^2.3.0",
@@ -87,6 +93,7 @@
     "stc-uglify": "^1.0.1",
     "style-loader": "^0.13.0",
     "superagent": "^1.7.2",
+    "tar-pack": "^3.4.0",
     "webpack": "^2.6.1"
   },
   "repository": "https://github.com/firekylin/firekylin",

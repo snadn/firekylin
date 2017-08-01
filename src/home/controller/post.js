@@ -69,6 +69,7 @@ export default class extends Base {
       pagination,
       tag: tagName,
       cate: cateName,
+	  source: this.get('source'),
       pathname: where.tag || where.cate
     });
     return this.displayView('index');

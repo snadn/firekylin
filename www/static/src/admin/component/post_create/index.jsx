@@ -625,6 +625,28 @@ module.exports = class extends Base {
   }
 
   /**
+   * 渲染作者
+   */
+  renderAuthor(postInfo = this.state.postInfo) {
+    const props = {
+      value: postInfo.author,
+      placeholder: '发帖人不是作者时填写',
+      onChange:(e)=>{
+        postInfo.author = e.target.value;
+        this.setState({postInfo});
+      }
+    };
+    return (
+      <div style={{marginBottom: 15}}>
+        <label>作者</label>
+        <div>
+          <ValidatedInput name="author" type="text" {...props} />
+        </div>
+      </div>
+    );
+  }
+
+  /**
    * 文章发布按钮，包括保存草稿和发布文章
    */
   renderPostButton(props = {}) {
@@ -699,6 +721,7 @@ module.exports = class extends Base {
               </div>
               <div className={classnames('col-xs-3')}>
                 {this.renderPostButton(props)}
+                {this.renderAuthor()}
                 {this.renderDatetime()}
                 {this.renderPageTemplateSelect()}
                 {this.renderCategory()}

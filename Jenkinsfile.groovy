@@ -7,6 +7,9 @@ node {
 	def NodejsLabel = params?.NodejsLabel ?: 'nodejs v4'
 	timestamps {
 		stage('Preparation') {
+			if (params?.WsCleanup) {
+				step([$class: 'WsCleanup']);
+			}
 			git branch: 'custom', url: "https://github.com/snadn/firekylin.git"
 		}
 		stage('Build') {

@@ -19,7 +19,8 @@ module.exports = class extends Base {
   initialState() {
     return {
       submitting: false,
-      userInfo: {}
+      userInfo: {},
+      hasEmail: false
     };
   }
 
@@ -55,8 +56,7 @@ module.exports = class extends Base {
         setTimeout(() => this.redirect('user/list'), 1000);
         break;
       case 'getUserInfo':
-        this.setState({userInfo: data});
-        this.hasEmail = !!data.email;
+        this.setState({userInfo: data, hasEmail: !!data.email});
         break;
     }
   }
@@ -117,12 +117,19 @@ module.exports = class extends Base {
     };
     if(this.id && ['name', 'email'].indexOf(type) > -1) {
       if(type === 'email') {
-        if(this.hasEmail) {
+        if(this.state.hasEmail) {
           prop.readOnly = true;
         }
       }else{
         prop.readOnly = true;
       }
+    }
+
+    let ldapOn = window.SysConfig.options.ldap && window.SysConfig.options.ldap.on || false;
+    let ldapWhiteList = window.SysConfig.options.ldap && window.SysConfig.options.ldap.ldapWhiteList || [];
+    let editUserName = this.state.userInfo.name || '';
+    if(this.id && ldapOn && ['type', 'status'].indexOf(type) === -1 && ldapWhiteList.indexOf(editUserName) === -1) {
+      prop.readOnly = true;
     }
 
     let validatePrefix = '';
@@ -174,6 +181,25 @@ module.exports = class extends Base {
     let props = {}
     if(this.state.submitting) {
       props.disabled = true;
+    }
+    let ldapOn = window.SysConfig.options.ldap && window.SysConfig.options.ldap.on || false;
+
+    if(!this.id && ldapOn) {
+      let ldapUserPage = window.SysConfig.options.ldap.ldapUserPage;
+      return (
+        <div className="fk-content-wrap">
+          <BreadCrumb {...this.props} />
+          <div className="manage-container">
+            <h3 style={{marginBottom: '20px'}}>LDAP提示</h3>
+            <p>本系统已开启LDAP认证服务，LDAP服务开启后，本系统不能新增用户，且用户的用户名、密码、邮箱、别名均由LDAP统一管理，本系统不能修改。</p>
+            <div className="alert alert-warning" role="alert">
+              如需要修改，请使用给本系统提供LDAP服务的
+              { ldapUserPage ? <a href={ldapUserPage} target="_blank">用户管理服务</a> : '用户管理服务'}
+              ，或者联系系统管理员。
+            </div>
+          </div>
+        </div>
+      );
     }
 
     return (

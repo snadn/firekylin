@@ -9,6 +9,25 @@ export default class extends Base {
    * @return {} []
    */
   async loginAction() {
+    const username = this.post('username');
+    let userInfo = {};
+
+    if(think.config('ldap') && think.config('ldap').on) {
+      //ldap白名单
+      const ldapWhiteList = think.config('ldap').ldapWhiteList || [];
+
+      if(ldapWhiteList.indexOf(username) > -1) {
+        think.log('NORMAL', 'VARIFY TYPE');
+        userInfo = await this.normalVarify(username);
+      }else {
+        think.log('LDAP', 'VARIFY TYPE');
+        userInfo = await this.ldapVarify(username);
+      }
+    }else {
+      think.log('NORMAL', 'VARIFY TYPE');
+      userInfo = await this.normalVarify(username);
+    }
+
     //二步验证
     let model = this.model('options');
     let options = await model.getOptions();
@@ -25,23 +44,11 @@ export default class extends Base {
       }
     }
 
-    //校验帐号和密码
-    let username = this.post('username');
-    let userModel = this.model('user');
-    let userInfo = await userModel.where({name: username}).find();
-    if(think.isEmpty(userInfo)) {
-      return this.fail('ACCOUNT_ERROR');
-    }
+    think.log(userInfo, 'userInfo');
 
     //帐号是否被禁用，且投稿者不允许登录
     if((userInfo.status | 0) !== 1 || userInfo.type === 3) {
       return this.fail('ACCOUNT_FORBIDDEN');
-    }
-
-    //校验密码
-    let password = this.post('password');
-    if(!userModel.checkPassword(userInfo, password)) {
-      return this.fail('ACCOUNT_ERROR');
     }
 
     await this.session('userInfo', userInfo);
@@ -144,5 +151,98 @@ export default class extends Base {
     }
 
     return this.success();
+  }
+
+  async normalVarify(username) {
+    //校验帐号和密码
+    let userModel = this.model('user');
+    let userInfo = await userModel.where({name: username}).find();
+    if(think.isEmpty(userInfo)) {
+      return this.fail('ACCOUNT_ERROR');
+    }
+
+    //帐号是否被禁用，且投稿者不允许登录
+    if((userInfo.status | 0) !== 1 || userInfo.type === 3) {
+      return this.fail('ACCOUNT_FORBIDDEN');
+    }
+
+    //校验密码
+    let password = this.post('password');
+    if(!userModel.checkPassword(userInfo, password)) {
+      return this.fail('ACCOUNT_ERROR');
+    }
+
+    return userInfo;
+  }
+
+  async ldapVarify(username) {
+    //ldap校验
+    const oripassword = this.post('oripassword');
+    const Ldap = think.service('ldap/index', 'admin');
+    const ldap = new Ldap(think.config('ldap'));
+    const ldapRes = await ldap.validate(username, oripassword);
+
+    if(!ldapRes) {
+        return this.fail('ACCOUNT_ERROR');
+    }
+
+    if(ldapRes === 'timeout') {
+        return this.fail('LDAP_CONNECT_TIMEOUT');
+    }
+
+    //ldap校验通过后，在数据库中查询该用户是否存在，若不存在则新增该用户到数据库，若存在则更新用户信息后登录成功
+    //从ldap中获取详细用户信息
+    let ldapUserInfo = await ldap.getUserInfo(username);
+    let newData = {};
+
+    if(!think.isEmpty(ldapUserInfo)) {
+        newData = {
+            username,
+            email: ldapUserInfo.mail,
+            display_name: ldapUserInfo.displayName,
+            password: ldapUserInfo.userPassword,
+            type: 2,
+            status: 1
+        }
+    }
+
+    //校验数据库中帐号是否存在
+    let userModel = this.model('user');
+    let userInfo = await userModel.where({name: username}).find();
+
+    if(think.isEmpty(userInfo)) {
+      //新增该用户到数据库
+
+      let modelInstance = this.model('user');
+      let insertId = await modelInstance.addUser(newData, this.ip());
+
+      think.log(`insertId: ${JSON.stringify(insertId)}`, 'LDAP');
+
+      if(insertId && insertId.type === 'add') {
+          userInfo = await userModel.where({name: username}).find();
+      }
+      if(insertId && insertId.type === 'exist') {
+        return this.fail('ACCOUNT_ERROR');
+      }
+    }else {
+      //更新数据库用户信息
+
+      let updateData = {
+        ...userInfo,
+        email: ldapUserInfo.mail,
+        display_name: ldapUserInfo.displayName,
+        password: ldapUserInfo.userPassword
+      }
+      let modelInstance = this.model('user');
+      let rows = await modelInstance.saveUser(updateData, this.ip());
+
+      think.log(`affectedRows: ${rows}`, 'USERINFO UPDATED');
+
+      if(rows) {
+        userInfo = await userModel.where({name: username}).find();
+      }
+    }
+
+    return userInfo;
   }
 }

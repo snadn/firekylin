@@ -102,6 +102,7 @@ CREATE TABLE `fk_post` (
   `is_public` tinyint(11) NOT NULL DEFAULT '1' COMMENT '1 为公开，0 为不公开',
   `comment_num` int(11) NOT NULL DEFAULT '0',
   `options` text COMMENT '一些选项，JSON 结构',
+  `author` varchar(255) NOT NULL DEFAULT '' COMMENT '作者',
   PRIMARY KEY (`id`),
   KEY `create_time` (`create_time`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

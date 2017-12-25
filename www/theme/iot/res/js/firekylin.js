@@ -81,12 +81,10 @@
       var dataType = comments.getAttribute('data-type');
       if(dataType === 'disqus') {
         loadDisqusComment();
-      }else if(dataType === 'duoshuo') {
-        loadDuoshuoComment();
-      }else if(dataType === 'changyan') {
+      } else if(dataType === 'hypercomments') {
+        loadHyperComments();
+      } else if(dataType === 'changyan') {
         loadChangyanComment();
-      }else if(dataType === 'netease') {
-        loadNeteaseComment();
       }
     }
 
@@ -123,15 +121,32 @@
     (doc.head || doc.body).appendChild(s);
   };
 
-  var loadDuoshuoComment = function() {
-    var disqus_thread = getById('ds_thread');
-    if(!disqus_thread) {
-      return;
-    }
-    win.duoshuoQuery = {short_name: disqus_thread.getAttribute('data-name')};
-    var s = doc.createElement('script');
-    s.src = '//static.duoshuo.com/embed.js';
-    (doc.head || doc.body).appendChild(s);
+  var loadHyperComments = function() {
+    var hyperComments = getById('hypercomments_widget');
+    var appid = hyperComments.getAttribute('data-name');
+
+    win._hcwp = win._hcwp || [];
+    win._hcwp.push({widget: 'Stream', widget_id: appid});
+
+    (function() {
+      if('HC_LOAD_INIT' in win) {
+        return;
+      }
+
+      var lang = (
+        navigator.language ||
+        navigator.systemLanguage ||
+        navigator.userLanguage ||
+        'en'
+      ).substr(0, 2).toLowerCase();
+      var hcc = document.createElement('script');
+      hcc.type = 'text/javascript';
+      hcc.async = true;
+      hcc.src = ('https:' === document.location.protocol ? 'https' : 'http') +'://w.hypercomments.com/widget/hc/'+appid+'/'+lang+'/widget.js';
+
+      var s = document.getElementsByTagName('script')[0];
+      s.parentNode.insertBefore(hcc, s.nextSibling);
+    })();
   };
 
   var loadChangyanComment = function() {
@@ -153,21 +168,6 @@
     (doc.head||doc.body).appendChild(s);
   }
 
-  var loadNeteaseComment = function() {
-    var disqus_thread = getById('cloud-tie-wrapper');
-    if(!disqus_thread) {
-      return;
-    }
-    win.cloudTieConfig = {
-      url: getById('comments').getAttribute('data-url'),
-      sourceId: '',
-      productKey: disqus_thread.getAttribute('data-name'),
-      target: disqus_thread.className
-    };
-    var s = doc.createElement('script');
-    s.src = 'https://img1.cache.netease.com/f2e/tie/yun/sdk/loader.js';
-    (doc.head || doc.body).appendChild(s);
-  }
   win.addEventListener('load', function() {
     loadComment();
   });
@@ -273,7 +273,9 @@
   }
 
   function lazyLoadShouldAppear(el, buffer) {
-    return el.offsetTop - (doc.body.scrollTop + (win.innerHeight || doc.documentElement.clientHeight)) < buffer;
+    return el.offsetTop - (
+      (doc.scrollingElement || doc.documentElement).scrollTop + (win.innerHeight || doc.documentElement.clientHeight)
+    ) < buffer;
   }
 
 
@@ -352,6 +354,8 @@
         hljs.addClass($li[i], 'mark');
       }
     }
+
+    // 如果需要定位且元素存在
     if (go && $li && $li[0]) {
       setTimeout(function () {
         window.scrollTo(0, getRect($li[0]).top - 50);
@@ -363,7 +367,7 @@
    * 移除所有高亮行号
    */
   hljs.removeMark = function () {
-    doc.querySelectorAll('pre code li.mark').forEach(function (elem) {
+    [].slice.call(doc.querySelectorAll('pre code li.mark')).forEach(function (elem) {
       hljs.removeClass(elem, 'mark');
     });
   };
@@ -372,59 +376,56 @@
    * 初始化
    */
   hljs.init = function () {
-    var $code = hljs.$code;
-    if ($code && $code.length) {
-      $code.forEach(function (elem, i) {
+    [].slice.call(hljs.$code).forEach(function (elem, i) {
         // 输出行号, -1是为了让最后一个换行忽略
-        var lines = elem.innerHTML.split(/\n/).slice(0, -1);
-        var html = lines.map(function (item, index) {
-          return '<li><span class="line-num" data-line="' + (index + 1) + '"></span>' + item + '</li>';
-        }).join('');
-        html = '<ul>' + html + '</ul>';
+      var lines = elem.innerHTML.split(/\n/).slice(0, -1);
+      var html = lines.map(function (item, index) {
+        return '<li><span class="line-num" data-line="' + (index + 1) + '"></span>' + item + '</li>';
+      }).join('');
+      html = '<ul>' + html + '</ul>';
 
-        // 输出语言
-        if (lines.length > 3 && elem.className.match(/lang-(\w+)/)) {
-          html += '<b class="name">' + RegExp.$1 + '</b>';
+      // 输出语言
+      if (lines.length > 3 && elem.className.match(/lang-(\w+)/) && RegExp.$1 !== 'undefined') {
+        html += '<b class="name">' + RegExp.$1 + '</b>';
+      }
+
+      elem.innerHTML = html;
+
+      hljs.addClass(elem, 'firekylin-code');
+
+      // 绑定点击高亮行事件
+      elem.addEventListener('click', function (event) {
+        // 小小的委托
+        if (!event.target || !hljs.hasClass(event.target, 'line-num')) {
+          return;
         }
 
-        elem.innerHTML = html;
-
-        hljs.addClass(elem, 'firekylin-code');
-
-        // 绑定点击高亮行事件
-        elem.addEventListener('click', function (event) {
-          // 小小的委托
-          if (!event.target || !hljs.hasClass(event.target, 'line-num')) {
-            return;
-          }
-
-          // 如果是区间
-          if (event.shiftKey) {
-            var hash = hljs.parseHash();
-            hash.newIndex = i + 1;
-            hash.current = event.target.getAttribute('data-line');
-            if (hash.index !== hash.newIndex - 0) {
-              hash.index = hash.newIndex;
-              hash.start = hash.current;
-              hash.end = 0;
-            } else {
-              if (hash.current > hash.start) {
-                hash.end = hash.current;
-              } else {
-                hash.end = hash.start;
-                hash.start = hash.current;
-              }
-            }
-            location.hash = hljs.stringHash(hash);
+        // 如果是区间
+        if (event.shiftKey) {
+          var hash = hljs.parseHash();
+          hash.newIndex = i + 1;
+          hash.current = event.target.getAttribute('data-line');
+          if (hash.index !== hash.newIndex - 0) {
+            hash.index = hash.newIndex;
+            hash.start = hash.current;
+            hash.end = 0;
           } else {
-            location.hash = hljs.stringHash({
-              index: i + 1,
-              start: event.target.getAttribute('data-line')
-            });
+            if (hash.current > hash.start) {
+              hash.end = hash.current;
+            } else {
+              hash.end = hash.start;
+              hash.start = hash.current;
+            }
           }
-        });
+          location.hash = hljs.stringHash(hash);
+        } else {
+          location.hash = hljs.stringHash({
+            index: i + 1,
+            start: event.target.getAttribute('data-line')
+          });
+        }
       });
-    }
+    });
   };
 
   hljs.init();

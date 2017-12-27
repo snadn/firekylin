@@ -11,26 +11,10 @@ export default class extends Base {
   async loginAction() {
     const username = this.post('username');
     let userInfo = {};
-
-    if(think.config('ldap') && think.config('ldap').on) {
-      //ldap白名单
-      const ldapWhiteList = think.config('ldap').ldapWhiteList || [];
-
-      if(ldapWhiteList.indexOf(username) > -1) {
-        think.log('NORMAL', 'VARIFY TYPE');
-        userInfo = await this.normalVarify(username);
-      }else {
-        think.log('LDAP', 'VARIFY TYPE');
-        userInfo = await this.ldapVarify(username);
-      }
-    }else {
-      think.log('NORMAL', 'VARIFY TYPE');
-      userInfo = await this.normalVarify(username);
-    }
-
-    //二步验证
     let model = this.model('options');
     let options = await model.getOptions();
+
+    //二步验证
     if(options.two_factor_auth) {
       let two_factor_auth = this.post('two_factor_auth');
       let verified = speakeasy.totp.verify({
@@ -42,6 +26,31 @@ export default class extends Base {
       if(!verified) {
         return this.fail('TWO_FACTOR_AUTH_ERROR');
       }
+    }
+    const ldapConfig = {
+      ldap_on: options.ldap_on === '1' ? true : false, //switch, maybe, default '0', '0' => close, '1' => open
+      ldap_url: options.ldap_url, //ldap url, required，'ldap://xxx.xx.x.xx:xxx'
+      ldap_connect_timeout: parseInt(options.ldap_connect_timeout), // ldap connect timeout, maybe, default 20000ms
+      ldap_baseDn: options.ldap_baseDn, //ldap baseDn, required
+      ldap_whiteList: options.ldap_whiteList ? options.ldap_whiteList.split(',') : [], //sep by ",", accounts in this string will not be varified with LDAP when LDAP is opened, and these accounts can be edited by itself instead of LDAP administrator, required
+      ldap_user_page: options.ldap_user_page, //url for ldap user to change userinfo, maybe, default ''
+      ldap_log: options.ldap_on === '0' ? false : true //logconf, maybe, default '1', '0' => close, '1' => open
+    }
+
+    if(ldapConfig.ldap_on) {
+      //ldap白名单
+      const ldap_whiteList = ldapConfig.ldap_whiteList;
+
+      if(ldap_whiteList.indexOf(username) > -1) {
+        think.log('NORMAL', 'VARIFY TYPE');
+        userInfo = await this.normalVarify(username);
+      }else {
+        think.log('LDAP', 'VARIFY TYPE');
+        userInfo = await this.ldapVarify(username);
+      }
+    }else {
+      think.log('NORMAL', 'VARIFY TYPE');
+      userInfo = await this.normalVarify(username);
     }
 
     think.log(userInfo, 'userInfo');
@@ -178,8 +187,21 @@ export default class extends Base {
   async ldapVarify(username) {
     //ldap校验
     const oripassword = this.post('oripassword');
+    let model = this.model('options');
+    let options = await model.getOptions();
+
+    const ldapConfig = {
+      ldap_on: options.ldap_on === '1' ? true : false, //switch, maybe, default '0', '0' => close, '1' => open
+      ldap_url: options.ldap_url, //ldap url, required，'ldap://xxx.xx.x.xx:xxx'
+      ldap_connect_timeout: parseInt(options.ldap_connect_timeout), // ldap connect timeout, maybe, default 20000ms
+      ldap_baseDn: options.ldap_baseDn, //ldap baseDn, required
+      ldap_whiteList: options.ldap_whiteList ? options.ldap_whiteList.split(',') : [], //sep by ",", accounts in this string will not be varified with LDAP when LDAP is opened, and these accounts can be edited by itself instead of LDAP administrator, required
+      ldap_user_page: options.ldap_user_page, //url for ldap user to change userinfo, maybe, default ''
+      ldap_log: options.ldap_on === '0' ? false : true //logconf, maybe, default '1', '0' => close, '1' => open
+    }
+
     const Ldap = think.service('ldap/index', 'admin');
-    const ldap = new Ldap(think.config('ldap'));
+    const ldap = new Ldap(ldapConfig);
     const ldapRes = await ldap.validate(username, oripassword);
 
     if(!ldapRes) {

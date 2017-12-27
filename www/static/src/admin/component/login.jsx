@@ -219,7 +219,7 @@ module.exports = class extends Base {
                     className={classnames({
                         right: true,
                         'forgot-password': true,
-                        hidden: window.SysConfig.options.ldap.on || false
+                        hidden: window.SysConfig.options.ldap_on === '1' ? true : false
                     })}
                 >
                   <a href="javascript:void(0)" onClick={this.toggleForgot.bind(this)}>找回密码</a>

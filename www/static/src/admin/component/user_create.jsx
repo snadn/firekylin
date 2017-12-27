@@ -125,10 +125,11 @@ module.exports = class extends Base {
       }
     }
 
-    let ldapOn = window.SysConfig.options.ldap && window.SysConfig.options.ldap.on || false;
-    let ldapWhiteList = window.SysConfig.options.ldap && window.SysConfig.options.ldap.ldapWhiteList || [];
+    let options = window.SysConfig.options;
+    let ldapOn = options.ldap_on === '1' ? true : false;
+    let ldap_whiteList = options.ldap_whiteList ? options.ldap_whiteList.split(',') : [];
     let editUserName = this.state.userInfo.name || '';
-    if(this.id && ldapOn && ['type', 'status'].indexOf(type) === -1 && ldapWhiteList.indexOf(editUserName) === -1) {
+    if(this.id && ldapOn && ['type', 'status'].indexOf(type) === -1 && ldap_whiteList.indexOf(editUserName) === -1) {
       prop.readOnly = true;
     }
 
@@ -182,10 +183,11 @@ module.exports = class extends Base {
     if(this.state.submitting) {
       props.disabled = true;
     }
-    let ldapOn = window.SysConfig.options.ldap && window.SysConfig.options.ldap.on || false;
+    let options = window.SysConfig.options;
+    let ldapOn = options.ldap_on === '1' ? true : false;
 
     if(!this.id && ldapOn) {
-      let ldapUserPage = window.SysConfig.options.ldap.ldapUserPage;
+      let ldap_user_page = options.ldap_user_page;
       return (
         <div className="fk-content-wrap">
           <BreadCrumb {...this.props} />
@@ -194,7 +196,7 @@ module.exports = class extends Base {
             <p>本系统已开启LDAP认证服务，LDAP服务开启后，本系统不能新增用户，且用户的用户名、密码、邮箱、别名均由LDAP统一管理，本系统不能修改。</p>
             <div className="alert alert-warning" role="alert">
               如需要修改，请使用给本系统提供LDAP服务的
-              { ldapUserPage ? <a href={ldapUserPage} target="_blank">用户管理服务</a> : '用户管理服务'}
+              { ldap_user_page ? <a href={ldap_user_page} target="_blank">用户管理服务</a> : '用户管理服务'}
               ，或者联系系统管理员。
             </div>
           </div>

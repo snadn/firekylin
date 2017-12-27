@@ -39,12 +39,6 @@ export default class extends think.controller.base {
       options.navigation = JSON.parse(options.navigation);
     } catch(e) { options.navigation = []; }
     delete options.push_sites; //不显示推送的配置，会有安全问题
-    let ldapConf = think.config('ldap');
-    options['ldap'] = {
-        on: ldapConf.on || false,
-        ldapUserPage: ldapConf.ldapUserPage,
-        ldapWhiteList: ldapConf.ldapWhiteList || []
-    };
     this.assign('options', options);
     return this.display('index/index');
   }

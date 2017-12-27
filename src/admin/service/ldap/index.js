@@ -6,10 +6,11 @@ export default class Ldap {
         // ldap配置
         // {
         //  url: 'ldap://x.x.x.x:389',
-        //  baseDn: 'dc=ldap,dc=example,dc=com'
+        //  ldap_baseDn: 'dc=ldap,dc=example,dc=com'
         // }
         this.config = {
-            log: conf.log || true,
+            url: conf.ldap_url || true,
+            log: conf.ldap_log === '1' ? true : false,
             ...conf
         };
 
@@ -17,9 +18,9 @@ export default class Ldap {
     }
     async getUserInfo(username) {
         let session = this.session;
-        let { url, baseDn, log, connectTimeout } = this.config;
+        let { url, ldap_baseDn, log, ldap_connect_timeout } = this.config;
 
-        if (!url || !baseDn) {
+        if (!url || !ldap_baseDn) {
             throw new Error('ldap config missing!');
         }
 
@@ -27,7 +28,7 @@ export default class Ldap {
         let client = ldap.createClient(
             {
                 url,
-                connectTimeout: connectTimeout || 20000
+                ldap_connect_timeout: ldap_connect_timeout || 20000
             }
         );
 
@@ -43,7 +44,7 @@ export default class Ldap {
                 timeLimit: 500 // 查询超时
             };
 
-            client.search(baseDn, opts, function (err, res1) {
+            client.search(ldap_baseDn, opts, function (err, res1) {
                 //查询结果事件响应
                 res1.on('searchEntry', function (entry) {
                     //获取查询的对象
@@ -90,7 +91,7 @@ export default class Ldap {
             setTimeout(() => {
                 log && think.log('connect timeout', 'LDAP');
                 reject('timeout');
-            }, connectTimeout);
+            }, ldap_connect_timeout);
         }).catch(error => {
             return error;
         });
@@ -98,7 +99,7 @@ export default class Ldap {
         return res;
     }
     async validate(username, password) {
-        let { url, baseDn, log, connectTimeout } = this.config;
+        let { url, ldap_baseDn, log, ldap_connect_timeout } = this.config;
 
         if (!url) {
             throw new Error('ldap url must setup!');
@@ -108,13 +109,13 @@ export default class Ldap {
         let client = ldap.createClient(
             {
                 url,
-                connectTimeout: connectTimeout || 20000
+                ldap_connect_timeout: ldap_connect_timeout || 20000
             }
         );
 
         log && think.log(`connecting ${url}`, 'LDAP');
 
-        let ldapCn = `cn=${username},${baseDn}`;
+        let ldapCn = `cn=${username},${ldap_baseDn}`;
 
         log && think.log(`ldapCn: ${ldapCn}`, 'LDAP');
 
@@ -140,7 +141,7 @@ export default class Ldap {
             setTimeout(() => {
                 log && think.log('connect timeout', 'LDAP');
                 reject('timeout');
-            }, connectTimeout);
+            }, ldap_connect_timeout);
         }).catch(error => {
             return error;
         });

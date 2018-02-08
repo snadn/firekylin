@@ -17,12 +17,6 @@ node {
 				sh """
 					#!/bin/bash
 
-					source /opt/rh/devtoolset-2/enable;
-					source /opt/rh/python27/enable
-
-					git clean -d -f -- "";
-					rm -rf pkg;
-
 					which yarn && alias npm=yarn;
 
 					node --version;
